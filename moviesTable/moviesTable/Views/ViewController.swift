@@ -7,13 +7,17 @@
 
 import UIKit
 
-struct Movie: Codable {
+struct Movie: Decodable {
     let title: String
     let posterPath: String
+    let overview: String
+    let releaseDate: String
     
     private enum CodingKeys: String, CodingKey {
         case title
         case posterPath = "poster_path"
+        case overview
+        case releaseDate = "release_date"
     }
 }
 
@@ -21,10 +25,13 @@ struct MovieResult: Decodable {
     let results: [Movie]
 }
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UISearchBarDelegate {
     
+    let reuseIdentifier = "MovieCell"
     var tableView: UITableView!
     var movies = [Movie]()
+    var filteredMovies = [Movie]()
+    let searchBar = UISearchBar()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,12 +40,25 @@ class ViewController: UIViewController {
         tableView = UITableView(frame: view.bounds, style: .plain)
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(MovieTableViewCell.self, forCellReuseIdentifier: "MovieCell")
-        
+        tableView.register(MovieTableViewCell.self, forCellReuseIdentifier: reuseIdentifier)
         view.addSubview(tableView)
+        
+        // Configurar el searchBar
+        searchBar.placeholder = "Buscar películas"
+        searchBar.delegate = self
+        view.addSubview(searchBar)
         
         // Configurar el título de la barra de navegación
         self.title = "Populares"
+        
+        // Establecer el título del botón de retroceso como una cadena vacía
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        
+        // Cambiar el color del botón de retroceso en la barra de navegación
+        navigationController?.navigationBar.tintColor = UIColor.white
+        
+        // Llamar a la función addConstraints
+        addConstraints()
         
         // Obtener los datos de la API
         fetchData()
@@ -59,6 +79,7 @@ class ViewController: UIViewController {
             do {
                 let result = try JSONDecoder().decode(MovieResult.self, from: data)
                 self.movies = result.results
+                self.filteredMovies = self.movies
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                 }
@@ -69,25 +90,81 @@ class ViewController: UIViewController {
     }
 }
 
+//UITableViewDataSource
 extension ViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return movies.count
+        return filteredMovies.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieTableViewCell
-        let movie = movies[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! MovieTableViewCell
+        let movie = filteredMovies[indexPath.row]
         cell.configure(with: movie)
         return cell
     }
 }
 
+//UITableViewDelegate
 extension ViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 100
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedMovie = filteredMovies[indexPath.row]
+        
+        // Crear instancia de DetailViewController
+        let detailViewController = DetailViewController()
+        detailViewController.movieTitle = selectedMovie.title
+        detailViewController.moviePosterPath = selectedMovie.posterPath
+        detailViewController.movieOverview = selectedMovie.overview
+        detailViewController.releaseDate = selectedMovie.releaseDate
+        
+        // Obtener el UINavigationController desde la propiedad navigationController
+        show(detailViewController, sender: nil)
+    }
+    
+    //UISearchBarDelegate
+        func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+            if searchText.isEmpty {
+                filteredMovies = movies
+            } else {
+                filteredMovies = movies.filter { movie in
+                    let titleContainsSearchText = movie.title.lowercased().contains(searchText.lowercased())
+                    let overviewContainsSearchText = movie.overview.lowercased().contains(searchText.lowercased())
+                    let releaseDateContainsSearchText = movie.releaseDate.lowercased().contains(searchText.lowercased())
+                    return titleContainsSearchText || overviewContainsSearchText || releaseDateContainsSearchText
+                }
+            
+            tableView.reloadData()
+        }
+    }
 }
 
+//Auto Layout
+extension ViewController {
+    func addConstraints() {
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            //arriba topAnchor
+            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            //izquierda - inicio leadingAnchor
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            //derecha - fin trailingAnchor
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            //searchBar.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.8),
+            //abajo bottomAnchor
+            tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 4),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+}
+
+//TableViewCell
 class MovieTableViewCell: UITableViewCell {
     
     let posterImageView: UIImageView = {
@@ -140,4 +217,3 @@ class MovieTableViewCell: UITableViewCell {
         }
     }
 }
-

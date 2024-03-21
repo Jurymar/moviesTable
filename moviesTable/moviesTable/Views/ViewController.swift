@@ -25,8 +25,9 @@ struct MovieResult: Decodable {
     let results: [Movie]
 }
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UISearchBarDelegate {
     
+    let reuseIdentifier = "MovieCell"
     var tableView: UITableView!
     var movies = [Movie]()
     var filteredMovies = [Movie]()
@@ -39,19 +40,22 @@ class ViewController: UIViewController {
         tableView = UITableView(frame: view.bounds, style: .plain)
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(MovieTableViewCell.self, forCellReuseIdentifier: "MovieCell")
+        tableView.register(MovieTableViewCell.self, forCellReuseIdentifier: reuseIdentifier)
         view.addSubview(tableView)
         
         // Configurar el searchBar
-        searchBar.delegate = self
         searchBar.placeholder = "Buscar películas"
+        searchBar.delegate = self
         view.addSubview(searchBar)
         
         // Configurar el título de la barra de navegación
         self.title = "Populares"
         
-        // Cambiar el color de fondo de la barra de navegación
-        navigationController?.navigationBar.barTintColor = UIColor.black // Puedes cambiar el color aquí
+        // Establecer el título del botón de retroceso como una cadena vacía
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        
+        // Cambiar el color del botón de retroceso en la barra de navegación
+        navigationController?.navigationBar.tintColor = UIColor.white
         
         // Llamar a la función addConstraints
         addConstraints()
@@ -93,7 +97,7 @@ extension ViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! MovieTableViewCell
         let movie = filteredMovies[indexPath.row]
         cell.configure(with: movie)
         return cell
@@ -105,22 +109,35 @@ extension ViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 100
     }
-}
-
-//UISearchBarDelegate
-extension ViewController: UISearchBarDelegate {
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchText.isEmpty {
-            filteredMovies = movies
-        } else {
-            filteredMovies = movies.filter { movie in
-                let titleContainsSearchText = movie.title.lowercased().contains(searchText.lowercased())
-                let overviewContainsSearchText = movie.overview.lowercased().contains(searchText.lowercased())
-                let releaseDateContainsSearchText = movie.releaseDate.lowercased().contains(searchText.lowercased())
-                return titleContainsSearchText || overviewContainsSearchText || releaseDateContainsSearchText
-            }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedMovie = filteredMovies[indexPath.row]
+        
+        // Crear instancia de DetailViewController
+        let detailViewController = DetailViewController()
+        detailViewController.movieTitle = selectedMovie.title
+        detailViewController.moviePosterPath = selectedMovie.posterPath
+        detailViewController.movieOverview = selectedMovie.overview
+        detailViewController.releaseDate = selectedMovie.releaseDate
+        
+        // Obtener el UINavigationController desde la propiedad navigationController
+        show(detailViewController, sender: nil)
+    }
+    
+    //UISearchBarDelegate
+        func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+            if searchText.isEmpty {
+                filteredMovies = movies
+            } else {
+                filteredMovies = movies.filter { movie in
+                    let titleContainsSearchText = movie.title.lowercased().contains(searchText.lowercased())
+                    let overviewContainsSearchText = movie.overview.lowercased().contains(searchText.lowercased())
+                    let releaseDateContainsSearchText = movie.releaseDate.lowercased().contains(searchText.lowercased())
+                    return titleContainsSearchText || overviewContainsSearchText || releaseDateContainsSearchText
+                }
+            
+            tableView.reloadData()
         }
-        tableView.reloadData()
     }
 }
 

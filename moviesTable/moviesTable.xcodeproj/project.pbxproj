@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AC266E3E2BACE23300E36E2C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC266E3D2BACE23300E36E2C /* ViewController.swift */; };
+		AC266E562BACE76D00E36E2C /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC266E552BACE76D00E36E2C /* DetailViewController.swift */; };
 		ACA78BDE2BA8E2CB00FE2B24 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA78BDD2BA8E2CB00FE2B24 /* AppDelegate.swift */; };
 		ACA78BE02BA8E2CB00FE2B24 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA78BDF2BA8E2CB00FE2B24 /* SceneDelegate.swift */; };
 		ACA78BE52BA8E2CB00FE2B24 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ACA78BE32BA8E2CB00FE2B24 /* Main.storyboard */; };
@@ -37,6 +38,7 @@
 
 /* Begin PBXFileReference section */
 		AC266E3D2BACE23300E36E2C /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = Views/ViewController.swift; sourceTree = "<group>"; };
+		AC266E552BACE76D00E36E2C /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
 		ACA78BDA2BA8E2CB00FE2B24 /* moviesTable.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moviesTable.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACA78BDD2BA8E2CB00FE2B24 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ACA78BDF2BA8E2CB00FE2B24 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 				ACA78BEB2BA8E2CF00FE2B24 /* LaunchScreen.storyboard */,
 				ACA78BEE2BA8E2CF00FE2B24 /* Info.plist */,
 				ACA78BE62BA8E2CB00FE2B24 /* moviesTable.xcdatamodeld */,
+				AC266E552BACE76D00E36E2C /* DetailViewController.swift */,
 			);
 			path = moviesTable;
 			sourceTree = "<group>";
@@ -263,6 +266,7 @@
 			files = (
 				AC266E3E2BACE23300E36E2C /* ViewController.swift in Sources */,
 				ACA78BDE2BA8E2CB00FE2B24 /* AppDelegate.swift in Sources */,
+				AC266E562BACE76D00E36E2C /* DetailViewController.swift in Sources */,
 				ACA78BE02BA8E2CB00FE2B24 /* SceneDelegate.swift in Sources */,
 				ACA78BE82BA8E2CC00FE2B24 /* moviesTable.xcdatamodeld in Sources */,
 			);

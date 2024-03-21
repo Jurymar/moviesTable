@@ -7,13 +7,17 @@
 
 import UIKit
 
-struct Movie: Codable {
+struct Movie: Decodable {
     let title: String
     let posterPath: String
+    let overview: String
+    let releaseDate: String
     
     private enum CodingKeys: String, CodingKey {
         case title
         case posterPath = "poster_path"
+        case overview
+        case releaseDate = "release_date"
     }
 }
 
@@ -25,6 +29,8 @@ class ViewController: UIViewController {
     
     var tableView: UITableView!
     var movies = [Movie]()
+    var filteredMovies = [Movie]()
+    let searchBar = UISearchBar()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,11 +40,21 @@ class ViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(MovieTableViewCell.self, forCellReuseIdentifier: "MovieCell")
-        
         view.addSubview(tableView)
+        
+        // Configurar el searchBar
+        searchBar.delegate = self
+        searchBar.placeholder = "Buscar películas"
+        view.addSubview(searchBar)
         
         // Configurar el título de la barra de navegación
         self.title = "Populares"
+        
+        // Cambiar el color de fondo de la barra de navegación
+        navigationController?.navigationBar.barTintColor = UIColor.black // Puedes cambiar el color aquí
+        
+        // Llamar a la función addConstraints
+        addConstraints()
         
         // Obtener los datos de la API
         fetchData()
@@ -59,6 +75,7 @@ class ViewController: UIViewController {
             do {
                 let result = try JSONDecoder().decode(MovieResult.self, from: data)
                 self.movies = result.results
+                self.filteredMovies = self.movies
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                 }
@@ -69,25 +86,68 @@ class ViewController: UIViewController {
     }
 }
 
+//UITableViewDataSource
 extension ViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return movies.count
+        return filteredMovies.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieTableViewCell
-        let movie = movies[indexPath.row]
+        let movie = filteredMovies[indexPath.row]
         cell.configure(with: movie)
         return cell
     }
 }
 
+//UITableViewDelegate
 extension ViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 100
     }
 }
 
+//UISearchBarDelegate
+extension ViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            filteredMovies = movies
+        } else {
+            filteredMovies = movies.filter { movie in
+                let titleContainsSearchText = movie.title.lowercased().contains(searchText.lowercased())
+                let overviewContainsSearchText = movie.overview.lowercased().contains(searchText.lowercased())
+                let releaseDateContainsSearchText = movie.releaseDate.lowercased().contains(searchText.lowercased())
+                return titleContainsSearchText || overviewContainsSearchText || releaseDateContainsSearchText
+            }
+        }
+        tableView.reloadData()
+    }
+}
+
+//Auto Layout
+extension ViewController {
+    func addConstraints() {
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            //arriba topAnchor
+            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            //izquierda - inicio leadingAnchor
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            //derecha - fin trailingAnchor
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            //searchBar.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.8),
+            //abajo bottomAnchor
+            tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 4),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+}
+
+//TableViewCell
 class MovieTableViewCell: UITableViewCell {
     
     let posterImageView: UIImageView = {
@@ -140,4 +200,3 @@ class MovieTableViewCell: UITableViewCell {
         }
     }
 }
-
